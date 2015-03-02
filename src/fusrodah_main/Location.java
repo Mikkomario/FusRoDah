@@ -1,4 +1,4 @@
-package fusrodah_util;
+package fusrodah_main;
 
 import flow_recording.ObjectFormatException;
 

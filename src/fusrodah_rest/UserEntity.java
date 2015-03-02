@@ -3,8 +3,11 @@ package fusrodah_rest;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
 import fusrodah_main.FusrodahTable;
-import fusrodah_util.Location;
+import fusrodah_main.Location;
 import nexus_http.HttpException;
 import nexus_http.InvalidParametersException;
 import nexus_http.MethodNotSupportedException;
@@ -95,6 +98,15 @@ public class UserEntity extends DatabaseEntity
 		// Also deletes the secure
 		new Secure().delete(parameters);
 	}
+	
+	@Override
+	public void writeContent(String serverLink, XMLStreamWriter writer, 
+			Map<String, String> parameters) throws HttpException, XMLStreamException
+	{
+		// The content can only be written with proper authorization
+		FusrodahTable.checkUserKey(getDatabaseID(), parameters);
+		super.writeContent(serverLink, writer, parameters);
+	}
 
 	
 	// OTHER METHODS	-------------------------------
@@ -113,6 +125,8 @@ public class UserEntity extends DatabaseEntity
 	private static Map<String, String> checkParameters(Map<String, String> parameters) 
 			throws HttpException
 	{
+		// TODO: Check that the userName is not already in use
+		
 		// Sets the points to zero
 		parameters.put("points", "0");
 		

@@ -9,7 +9,7 @@ import java.util.Map;
 import vault_database.DatabaseUnavailableException;
 import flow_recording.ObjectFormatException;
 import fusrodah_main.FusrodahTable;
-import fusrodah_util.Location;
+import fusrodah_main.Location;
 import nexus_http.HttpException;
 import nexus_http.InternalServerException;
 import nexus_http.InvalidParametersException;
@@ -130,11 +130,11 @@ public class ShoutListEntity extends DatabaseTableEntity
 				throw new InvalidParametersException(e.getMessage());
 			}
 			
-			// Also updates user location
-			this.user.updateLocation(this.location);
-			
 			// And checks for authorization
 			FusrodahTable.checkUserKey(this.user.getDatabaseID(), parameters);
+			
+			// Also updates user location
+			this.user.updateLocation(this.location);
 		}
 		
 		

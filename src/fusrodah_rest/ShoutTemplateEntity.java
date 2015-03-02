@@ -3,7 +3,10 @@ package fusrodah_rest;
 import java.util.HashMap;
 import java.util.Map;
 
+import flow_recording.ObjectFormatException;
 import fusrodah_main.FusrodahTable;
+import fusrodah_main.Location;
+import fusrodah_main.SimpleDate;
 import nexus_http.HttpException;
 import nexus_http.InvalidParametersException;
 import nexus_http.MethodNotSupportedException;
@@ -49,6 +52,11 @@ public class ShoutTemplateEntity extends DatabaseEntity
 	{
 		super(new SimpleRestData(), parent, FusrodahTable.TEMPLATES, 
 				checkParameters(parameters), getDefaultParameters());
+		
+		// Creates a new shout as well
+		parameters.put("templateID", getDatabaseID());
+		parameters.put("location", parameters.get("startLocation"));
+		new ShoutEntity(this, parameters);
 	}
 	
 	
@@ -99,6 +107,17 @@ public class ShoutTemplateEntity extends DatabaseEntity
 	
 	// OTHER METHODS	------------------------------
 	
+	/**
+	 * Updates the last shout time attribute to the database
+	 * @param time The new last shout time
+	 * @throws HttpException If the update couldn't be written
+	 */
+	public void updateLastShoutTime(SimpleDate time) throws HttpException
+	{
+		setAttribute("lastShoutTime", time.toString());
+		writeData();
+	}
+	
 	private static Map<String, String> getDefaultParameters()
 	{
 		Map<String, String> defaults = new HashMap<>();
@@ -126,6 +145,29 @@ public class ShoutTemplateEntity extends DatabaseEntity
 			UserEntity receiver = new UserEntity(parameters.get("receiverID"));
 			parameters.put("endLocation", receiver.getAttributes().get("location"));
 		}
+		else
+		{
+			try
+			{
+				new Location(parameters.get("endLocation"));
+			}
+			catch (ObjectFormatException e)
+			{
+				throw new InvalidParametersException(e.getMessage());
+			}
+		}
+		
+		// Checks that the location(s) can be parsed
+		try
+		{
+			new Location(parameters.get("startLocation"));
+		}
+		catch (ObjectFormatException e)
+		{
+			throw new InvalidParametersException(e.getMessage());
+		}
+		
+		parameters.put("lastShoutTime", new SimpleDate().toString());
 		
 		return parameters;
 	}

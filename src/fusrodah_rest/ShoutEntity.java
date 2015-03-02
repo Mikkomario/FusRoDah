@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 import fusrodah_main.FusrodahTable;
+import fusrodah_main.Location;
 import fusrodah_main.SimpleDate;
-import fusrodah_util.Location;
 import nexus_http.HttpException;
 import nexus_http.InvalidParametersException;
 import nexus_http.MethodNotSupportedException;
@@ -154,8 +154,8 @@ public class ShoutEntity extends DatabaseEntity
 			HttpException
 	{
 		// Checks that the given location is valid
-		if (parameters.containsKey("location"))
-			new Location(parameters.get("location"));
+		if (!parameters.containsKey("location"))
+			throw new InvalidParametersException("Parameter 'location' required");
 		
 		if (!parameters.containsKey("shouterID"))
 			throw new InvalidParametersException("Parameter 'shouterID' required");
@@ -166,19 +166,28 @@ public class ShoutEntity extends DatabaseEntity
 		// Also checks for authorization
 		FusrodahTable.checkUserKey(shouter.getDatabaseID(), parameters);
 		
+		// Updates the shouter location
+		shouter.updateLocation(new Location(parameters.get("location")));
+		
 		// Adds the "created" parameter itself
 		parameters.put("created", new SimpleDate().toString());
 		
 		// If parameter "lastShoutID" has been provided, uses the data of that shout
 		if (parameters.containsKey("lastShoutID"))
 		{
+			// TODO: Check that the last shout can actually be heard from the given location
+			
 			Map<String, String> lastShoutData = 
 					new ShoutEntity(parameters.get("lastShoutID")).getAttributes();
 			
 			parameters.put("shouterIDs", lastShoutData.get("shouterIDs") + "+" + 
 					parameters.get("shouterID"));
 			
-			parameters.put("templateID", lastShoutData.get("templateID"));
+			// Uses the same template, but also updates the template's last shout time
+			ShoutTemplateEntity template = 
+					new ShoutTemplateEntity(lastShoutData.get("templateID"));
+			parameters.put("templateID", template.getDatabaseID());
+			template.updateLastShoutTime(new SimpleDate());
 		}
 		else
 			parameters.put("shouterIDs", shouter.getDatabaseID());

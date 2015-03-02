@@ -19,7 +19,8 @@ CREATE TABLE templates1
 	startLocation varchar(255) 	NOT NULL,
 	endLocation varchar(255),
 	senderID 	bigint 			NOT NULL,
-	receiverID 	bigint
+	receiverID 	bigint,
+	lastShoutTime varchar(255) 	NOT NULL
 );
 
 CREATE TABLE users1

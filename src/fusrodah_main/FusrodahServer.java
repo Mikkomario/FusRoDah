@@ -1,10 +1,17 @@
 package fusrodah_main;
 
+import java.io.FileNotFoundException;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
+import fusrodah_rest.ShoutListEntity;
+import fusrodah_rest.TemplateListEntity;
+import fusrodah_rest.UsersListEntity;
+import nexus_http.FileReaderClient;
+import nexus_rest.ImmutableRestEntity;
 import nexus_rest.RestEntity;
 import nexus_rest.StaticRestServer;
-import nexus_test.TestRestEntity;
 import vault_database.DatabaseSettings;
 import vault_database.DatabaseUnavailableException;
 import alliance_authorization.LoginManagerEntity;
@@ -31,7 +38,8 @@ public class FusrodahServer
 	/**
 	 * Starts the server
 	 * @param args The first parameter is the server ip. The second parameter is the port 
-	 * number. The third parameter is the database password. The fourth one is database user 
+	 * number. The third parameter is the database password. The fourth is whether to run the 
+	 * tests at the start of the program (default = false), The fourth one is database user 
 	 * (default = root). The fifth is database address (default = jdbc:mysql://localhost:3306/)
 	 */
 	public static void main(String[] args)
@@ -45,11 +53,14 @@ public class FusrodahServer
 		
 		String connectionTarget = "jdbc:mysql://localhost:3306/";
 		String user = "root";
+		boolean test = false;
 		
+		if (args.length >= 6)
+			connectionTarget = args[5];
 		if (args.length >= 5)
-			connectionTarget = args[4];
+			user = args[4];
 		if (args.length >= 4)
-			user = args[3];
+			test = Boolean.parseBoolean(args[3]);
 		
 		// Initializes database settings
 		try
@@ -65,14 +76,34 @@ public class FusrodahServer
 		}
 		
 		// Creates the server entities
-		RestEntity root = new TestRestEntity("root", null);
-		// TODO: Replace with new entities once done
-		//new TestTableEntity("entities", root);
+		Map<String, String> serverAttributes = new HashMap<>();
+		serverAttributes.put("started", new SimpleDate().toString());
+		serverAttributes.put("version", "1.0");
+		
+		RestEntity root = new ImmutableRestEntity("root", null, serverAttributes);
+		
 		new LoginManagerEntity("login", root, new PasswordChecker(FusrodahTable.SECURE, 
 				"passwordHash", "id"));
+		new ShoutListEntity(root);
+		new TemplateListEntity(root);
+		new UsersListEntity(root);
 		
 		// Starts the server
 		StaticRestServer.setRootEntity(root);
 		StaticRestServer.startServer(args);
+		
+		// If the testing is set to true, runs the test
+		if (test)
+		{
+			try
+			{
+				new FileReaderClient("Test/1.1", args[0], Integer.parseInt(args[1]), 
+						true).readFile("basicTestInstructions.txt", "*");
+			}
+			catch (NumberFormatException | FileNotFoundException e)
+			{
+				e.printStackTrace();
+			}
+		}
 	}
 }

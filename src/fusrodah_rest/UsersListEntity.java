@@ -68,6 +68,8 @@ public class UsersListEntity extends DatabaseTableEntity
 	protected RestEntity getMissingEntity(String pathPart, Map<String, String> parameters) 
 			throws HttpException
 	{
+		// TODO: Remove this and make a new login entity that accepts userNames
+		
 		// Can also search for users based on the username (if starts with a letter)
 		if (!pathPart.isEmpty() && !Character.isDigit(pathPart.charAt(0)))
 		{
