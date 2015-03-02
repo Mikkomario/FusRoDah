@@ -7,7 +7,9 @@ import java.util.Map;
 
 import fusrodah_main.FusrodahTable;
 import fusrodah_main.SimpleDate;
+import fusrodah_util.Location;
 import nexus_http.HttpException;
+import nexus_http.InvalidParametersException;
 import nexus_http.MethodNotSupportedException;
 import nexus_http.MethodType;
 import nexus_http.NotFoundException;
@@ -28,6 +30,8 @@ public class ShoutEntity extends DatabaseEntity
 	// ATTRIBUTES	-----------------------------
 	
 	private static final String ROOTPATH = "root/shouts/";
+	
+	
 	
 	// CONSTRUCTOR	-----------------------------
 	
@@ -53,6 +57,9 @@ public class ShoutEntity extends DatabaseEntity
 		super(new SimpleRestData(), parent, FusrodahTable.SHOUTS, checkParameters(parameters), 
 				new HashMap<>());
 	}
+	
+	
+	// IMPLEMENTED METHODS	-----------------------------
 
 	@Override
 	public void Put(Map<String, String> parameters) throws HttpException
@@ -87,9 +94,78 @@ public class ShoutEntity extends DatabaseEntity
 	
 	// OTHER METHODS	----------------------------------
 	
+	/**
+	 * Checks whether the shout should be presented
+	 * @param location The location at which the shout might be heard
+	 * @param userID The user that might hear the shout
+	 * @return Should the user hear the shout at the given location
+	 */
+	public boolean isValidFor(Location location, String userID)
+	{
+		return canBeHeardBy(userID) && reaches(location);
+	}
+	
+	/**
+	 * This method checks whether the given user can hear this shout
+	 * @param userID The identifier of the user that might hear the shout
+	 * @return Can the user hear the shout
+	 */
+	public boolean canBeHeardBy(String userID)
+	{
+		String[] shouterIDs = getShouterIds();
+		
+		for (int i = 0; i < shouterIDs.length; i++)
+		{
+			if (shouterIDs[i].equals(userID))
+				return false;
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * @return How far the shout reaches
+	 */
+	public double getRange()
+	{
+		// TODO: Create a better version at some point
+		return 1000;
+	}
+	
+	/**
+	 * @return The origin location of this shout
+	 */
+	public Location getLocation()
+	{
+		return new Location(getAttributes().get("location"));
+	}
+	
+	/**
+	 * Checks whether this shout reaches the given location
+	 * @param location The location this shout should reach
+	 * @return Does this shout reach the given location
+	 */
+	public boolean reaches(Location location)
+	{
+		return getLocation().getDistanceFrom(location) < getRange();
+	}
+	
 	private static Map<String, String> checkParameters(Map<String, String> parameters) throws 
 			HttpException
 	{
+		// Checks that the given location is valid
+		if (parameters.containsKey("location"))
+			new Location(parameters.get("location"));
+		
+		if (!parameters.containsKey("shouterID"))
+			throw new InvalidParametersException("Parameter 'shouterID' required");
+		
+		// The shouter must be an existing user
+		UserEntity shouter = new UserEntity(parameters.get("shouterID"));
+		
+		// Also checks for authorization
+		FusrodahTable.checkUserKey(shouter.getDatabaseID(), parameters);
+		
 		// Adds the "created" parameter itself
 		parameters.put("created", new SimpleDate().toString());
 		
@@ -99,17 +175,13 @@ public class ShoutEntity extends DatabaseEntity
 			Map<String, String> lastShoutData = 
 					new ShoutEntity(parameters.get("lastShoutID")).getAttributes();
 			
-			if (parameters.containsKey("shouterID"))
-				parameters.put("shouterIDs", lastShoutData.get("shouterIDs") + "+" + 
-						parameters.get("shouterID"));
-			else
-				parameters.put("shouterIDs", lastShoutData.get("shouterIDs") + "+" + 
-						parameters.get("shouterIDs"));
+			parameters.put("shouterIDs", lastShoutData.get("shouterIDs") + "+" + 
+					parameters.get("shouterID"));
 			
 			parameters.put("templateID", lastShoutData.get("templateID"));
 		}
-		else if (parameters.containsKey("shouterID"))
-			parameters.put("shouterIDs", parameters.get("shouterID"));
+		else
+			parameters.put("shouterIDs", shouter.getDatabaseID());
 		
 		return parameters;
 	}
@@ -117,15 +189,19 @@ public class ShoutEntity extends DatabaseEntity
 	private RestEntityList getShouters() throws HttpException
 	{
 		// Parses the ids from the shouterIDs
-		String[] shouterIDs = getAttributes().get("shouterIDs").split("+");
+		String[] shouterIDs = getShouterIds();
 		List<RestEntity> shouters = new ArrayList<>();
 		
 		for (int i = 0; i < shouterIDs.length; i++)
 		{
-			// TODO: Handle this more carefully?
 			shouters.add(new UserEntity(shouterIDs[i]));
 		}
 		
 		return new SimpleRestEntityList("shouters", this, shouters);
+	}
+	
+	private String[] getShouterIds()
+	{
+		return getAttributes().get("shouterIDs").split("+");
 	}
 }

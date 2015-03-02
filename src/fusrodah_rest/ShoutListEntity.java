@@ -1,15 +1,22 @@
 package fusrodah_rest;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import vault_database.DatabaseUnavailableException;
+import flow_recording.ObjectFormatException;
 import fusrodah_main.FusrodahTable;
+import fusrodah_util.Location;
 import nexus_http.HttpException;
+import nexus_http.InternalServerException;
+import nexus_http.InvalidParametersException;
 import nexus_http.MethodNotSupportedException;
 import nexus_http.MethodType;
+import nexus_http.NotFoundException;
 import nexus_rest.ImmutableRestData;
-import nexus_rest.RestData;
 import nexus_rest.RestEntity;
 import nexus_rest.RestEntityList;
 import alliance_rest.DatabaseEntityTable;
@@ -61,37 +68,172 @@ public class ShoutListEntity extends DatabaseTableEntity
 	{
 		throw new MethodNotSupportedException(MethodType.DELETE);
 	}
+	
+	@Override
+	protected RestEntity getMissingEntity(String pathPart, Map<String, String> parameters) 
+			throws HttpException
+	{
+		// Best is a valid entity under this one
+		if (pathPart.equalsIgnoreCase("best"))
+			return new BestShoutList(this, parameters);
+		
+		return super.getMissingEntity(pathPart, parameters);
+	}
+	
+	@Override
+	protected Map<String, RestEntity> getMissingEntities(Map<String, String> parameters) 
+			throws HttpException
+	{
+		Map<String, RestEntity> entities = super.getMissingEntities(parameters);
+		if (entities == null)
+			entities = new HashMap<>();
+		
+		entities.put("best", new BestShoutList(this, parameters));
+		
+		return entities;
+	}
 
 	
 	// SUBCLASSES	--------------------------------
 	
 	private static class BestShoutList extends RestEntityList
 	{
-		// TODO: Change entityLists so that they add the data into the list only when it is 
-		// requested / required (at nexus)
+		// ATTRIBUTES	----------------------------
+		
+		private List<RestEntity> bestEntities;
+		private UserEntity user;
+		private Location location;
+		
 		
 		// CONSTRUCTOR	----------------------------
 		
-		public BestShoutList(RestEntity parent,
-				List<RestEntity> initialEntities)
+		public BestShoutList(RestEntity parent, Map<String, String> parameters) throws 
+				HttpException
 		{
-			super(name, parent, initialEntities);
-			// TODO Auto-generated constructor stub
+			super("best", parent);
+			
+			this.bestEntities = null;
+			
+			// Checks the parameters ('userID' and 'location') required
+			if (!parameters.containsKey("userID") || !parameters.containsKey("location"))
+				throw new InvalidParametersException(
+						"Parameters 'userID' and 'location' required");
+			
+			// Checks that the user is valid
+			this.user = new UserEntity(parameters.get("userID"));
+			try
+			{
+				this.location = new Location(parameters.get("location"));
+			}
+			catch (ObjectFormatException e)
+			{
+				throw new InvalidParametersException(e.getMessage());
+			}
+			
+			// Also updates user location
+			this.user.updateLocation(this.location);
+			
+			// And checks for authorization
+			FusrodahTable.checkUserKey(this.user.getDatabaseID(), parameters);
+		}
+		
+		
+		// IMPLEMENTED METHODS	-------------------
+
+		@Override
+		protected List<RestEntity> getEntities()
+		{
+			// If the entities haven't bee requested yet, finds them
+			if (this.bestEntities == null)
+			{
+				try
+				{
+					List<ShoutEntity> bestShouts = findBestShouts(this.location, 
+							this.user.getDatabaseID());
+					this.bestEntities = new ArrayList<>();
+					this.bestEntities.addAll(bestShouts);
+				}
+				catch (HttpException e)
+				{
+					// TODO Change the overridden method to allow httpExceptions
+					e.printStackTrace();
+				}
+			}
+			
+			return this.bestEntities;
 		}
 
 		@Override
 		public void trim(Map<String, String> parameters)
 		{
-			// TODO Auto-generated method stub
-			
+			// No trimming required
 		}
 
 		@Override
 		public void Put(Map<String, String> parameters) throws HttpException
 		{
-			// TODO Auto-generated method stub
-			
+			throw new MethodNotSupportedException(MethodType.PUT);
 		}
 		
+		
+		// OTHER METHODS	-------------------------
+		
+		private static List<ShoutEntity> findBestShouts(Location location, String userID) throws 
+				HttpException
+		{
+			try
+			{
+				// Finds all possible shoutIDs
+				List<String> shoutIDs = DatabaseEntityTable.findMatchingIDs(
+						FusrodahTable.SHOUTS, new String[0], new String[0]);
+				
+				List<ShoutEntity> bestShouts = new ArrayList<>();
+				
+				// Goes through the shouts
+				for (String shoutID : shoutIDs)
+				{
+					ShoutEntity shout = new ShoutEntity(shoutID);
+					
+					// Checks if the shout can be heard at all
+					if (!shout.isValidFor(location, userID))
+						continue;
+					
+					// Tries to place the shout to the list of best shouts
+					for (int i = 0; i < 3; i++)
+					{
+						if (bestShouts.size() < i)
+						{
+							bestShouts.add(shout);
+							break;
+						}
+						else if (shoutIsBetterThanAnother(shout, bestShouts.get(i)))
+						{
+							bestShouts.add(i, shout);
+							
+							if (i == 2 || bestShouts.size() > 3)
+								bestShouts.remove(3);
+							
+							break;
+						}
+					}
+				}
+				
+				return bestShouts;
+			}
+			catch (DatabaseUnavailableException | SQLException e)
+			{
+				throw new InternalServerException("Couldn't read the shout IDs", e);
+			}
+			catch (NotFoundException e)
+			{
+				throw new InternalServerException("Couldn't create a shout", e);
+			}
+		}
+		
+		private static boolean shoutIsBetterThanAnother(ShoutEntity shout, ShoutEntity another)
+		{
+			// TODO: Implement this
+			return false;
+		}
 	}
 }

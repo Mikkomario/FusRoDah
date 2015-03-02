@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import fusrodah_main.FusrodahTable;
+import fusrodah_util.Location;
 import nexus_http.HttpException;
 import nexus_http.InvalidParametersException;
 import nexus_http.MethodNotSupportedException;
@@ -97,6 +98,17 @@ public class UserEntity extends DatabaseEntity
 
 	
 	// OTHER METHODS	-------------------------------
+	
+	/**
+	 * Updates the user's new location to the database
+	 * @param newLocation The user's new location
+	 * @throws HttpException If the update couldn't be performed
+	 */
+	public void updateLocation(Location newLocation) throws HttpException
+	{
+		setAttribute("location", newLocation.toString());
+		writeData();
+	}
 	
 	private static Map<String, String> checkParameters(Map<String, String> parameters) 
 			throws HttpException
