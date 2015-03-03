@@ -201,7 +201,7 @@ public class ShoutListEntity extends DatabaseTableEntity
 					// Tries to place the shout to the list of best shouts
 					for (int i = 0; i < 3; i++)
 					{
-						if (bestShouts.size() < i)
+						if (bestShouts.size() <= i)
 						{
 							bestShouts.add(shout);
 							break;

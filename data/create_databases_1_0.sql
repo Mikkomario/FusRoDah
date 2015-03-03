@@ -28,7 +28,7 @@ CREATE TABLE users1
 	id 			bigint 			NOT NULL PRIMARY KEY AUTO_INCREMENT,
 	location 	varchar(255),
 	points 		bigint,
-	userName 	varchar(255) 	NOT NULL UNIQUE
+	userName 	varchar(255) 	NOT NULL
 );
 
 CREATE TABLE secure1

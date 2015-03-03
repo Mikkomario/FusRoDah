@@ -120,6 +120,8 @@ public class UserEntity extends DatabaseEntity
 	{
 		setAttribute("location", newLocation.toString());
 		writeData();
+		
+		// TODO: Not working since userName can't be updated (duplicate)
 	}
 	
 	private static Map<String, String> checkParameters(Map<String, String> parameters) 

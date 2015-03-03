@@ -211,6 +211,6 @@ public class ShoutEntity extends DatabaseEntity
 	
 	private String[] getShouterIds()
 	{
-		return getAttributes().get("shouterIDs").split("+");
+		return getAttributes().get("shouterIDs").split("\\+");
 	}
 }
