@@ -15,7 +15,7 @@ public class SimpleDate implements Comparable<SimpleDate>
 {
 	// ATTRIBUTES	-------------------------------
 	
-	private static DateFormat format = new SimpleDateFormat("MM-dd-HH-mm");
+	private static DateFormat format = new SimpleDateFormat("YYYY-MM-dd-HH-mm");
 	
 	private Date date;
 	

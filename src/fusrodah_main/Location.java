@@ -1,6 +1,8 @@
 package fusrodah_main;
 
 import flow_recording.ObjectFormatException;
+import genesis_util.HelpMath;
+import genesis_util.Vector2D;
 
 /**
  * Location represents a location in the real world. The location is immutable once created.
@@ -12,28 +14,31 @@ public class Location
 {
 	// ATTRIBUTES	-----------------------------
 	
-	private final double latitude, longitude, accuracy;
+	private final Vector2D latLong;
+	
+	private static final int EARTH_RADIUS = 6371000; // metres
 	
 	
 	// CONSTRUCTOR	-----------------------------
 	
 	/**
 	 * Parses a new location from the given string
-	 * @param s The string that contains the location data. Should contain latitude, longitude 
-	 * and accuracy, all in double format separated with semicolons.
+	 * @param s The string that contains the location data. Should contain latitude, longitude, 
+	 * both in double format separated with a semicolon.
 	 */
 	public Location(String s)
 	{
 		String[] parts = s.split(";");
 		
-		if (parts.length < 3)
+		if (parts.length < 2)
 			throw new ObjectFormatException("Can't parse a location from " + s);
 		
 		try
 		{
-			this.latitude = Double.parseDouble(parts[0]);
-			this.longitude = Double.parseDouble(parts[1]);
-			this.accuracy = Double.parseDouble(parts[2]);
+			double latitude = Double.parseDouble(parts[0]);
+			double longitude = Double.parseDouble(parts[1]);
+			
+			this.latLong = new Vector2D(latitude, longitude);
 		}
 		catch (NumberFormatException e)
 		{
@@ -43,26 +48,30 @@ public class Location
 	
 	/**
 	 * Creates a new location
-	 * @param latitude The latitude coordinate
-	 * @param longitude The longitude coordinate
-	 * @param accuracy The accuracy of the location
+	 * @param latitudeLongitude The location's coordinates in latitude-longitude format
 	 */
-	public Location(double latitude, double longitude, double accuracy)
+	public Location(Vector2D latitudeLongitude)
 	{
-		this.latitude = latitude;
-		this.longitude = longitude;
-		this.accuracy = accuracy;
+		this.latLong = latitudeLongitude;
 	}
 	
 	
 	// GETTERS & SETTERS	-------------------------------
 	
 	/**
+	 * @return The latitude-longitude coordinates of this position
+	 */
+	public Vector2D getCoordinates()
+	{
+		return this.latLong;
+	}
+	
+	/**
 	 * @return The latitude coordinate of this location
 	 */
 	public double getLatitude()
 	{
-		return this.latitude;
+		return getCoordinates().getFirst();
 	}
 	
 	/**
@@ -70,15 +79,7 @@ public class Location
 	 */
 	public double getLongitude()
 	{
-		return this.longitude;
-	}
-	
-	/**
-	 * @return The accuracy of this location
-	 */
-	public double getAccuracy()
-	{
-		return this.accuracy;
+		return getCoordinates().getSecond();
 	}
 	
 	
@@ -89,21 +90,73 @@ public class Location
 	 * @param other The other location
 	 * @return Direction from this location to the other. In degrees where 0 is east and 
 	 * the value increases counter-clockwise.
+	 * @see "http://www.movable-type.co.uk/scripts/latlong.html"
 	 */
 	public double getDirectionTowards(Location other)
-	{
-		// TODO: Implement
-		return 0;
+	{	
+		/*
+		 * var y = Math.sin(λ2-λ1) * Math.cos(φ2);
+			var x = Math.cos(φ1)*Math.sin(φ2) -
+			        Math.sin(φ1)*Math.cos(φ2)*Math.cos(λ2-λ1);
+			var brng = Math.atan2(y, x).toDegrees();
+		 */
+		
+		Vector2D radianCoordinates1 = getRadianCoordinates();
+		Vector2D radianCoordinates2 = other.getRadianCoordinates();
+		
+		double y = Math.sin(radianCoordinates2.getSecond() - radianCoordinates1.getSecond()) * 
+				Math.cos(radianCoordinates2.getFirst());
+		double x = Math.cos(radianCoordinates1.getFirst()) * 
+				Math.sin(radianCoordinates2.getFirst()) - 
+				Math.sin(radianCoordinates1.getFirst()) * 
+				Math.cos(radianCoordinates2.getFirst() * 
+				Math.cos(radianCoordinates2.getSecond() - radianCoordinates1.getSecond()));
+		
+		return HelpMath.getVectorDirection(x, y);
 	}
 	
 	/**
 	 * Calculates the distance between the two locations
 	 * @param other The other location
 	 * @return The distance between the two locations
+	 * @see "http://www.movable-type.co.uk/scripts/latlong.html"
 	 */
 	public double getDistanceFrom(Location other)
 	{
-		// TODO: Implement
-		return 0;
+		/*
+		 * var R = 6371000; // metres
+			var φ1 = lat1.toRadians();
+			var φ2 = lat2.toRadians();
+			var Δφ = (lat2-lat1).toRadians();
+			var Δλ = (lon2-lon1).toRadians();
+			
+			var a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+			        Math.cos(φ1) * Math.cos(φ2) *
+			        Math.sin(Δλ/2) * Math.sin(Δλ/2);
+			var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+			
+			var d = R * c;
+		 */
+		
+		double latRads1 = getRadianCoordinates().getFirst();
+		double latRads2 = other.getRadianCoordinates().getFirst();
+		
+		double deltaLatitudeRads = Math.toRadians(-HelpMath.checkDirection(
+				other.getLatitude() - getLatitude()));
+		double deltaLongitudeRads = Math.toRadians(-HelpMath.checkDirection(
+				other.getLongitude() - getLongitude()));
+		
+		double a = Math.pow(Math.sin(deltaLatitudeRads / 2), 2) + 
+				Math.cos(latRads1) * Math.cos(latRads2) * 
+				Math.pow(Math.sin(deltaLongitudeRads / 2), 2);
+		
+		double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+		
+		return EARTH_RADIUS * c;
+	}
+	
+	private Vector2D getRadianCoordinates()
+	{
+		return new Vector2D(Math.toRadians(-getLatitude()), Math.toRadians(-getLongitude()));
 	}
 }

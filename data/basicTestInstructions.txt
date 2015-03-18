@@ -8,7 +8,7 @@ GET root
 #user2:@id=POST root/users?location=1;1;1&userName=testUser2&password=test
 
 * Logs in with the users
-#key1:userKey=GET root/login/#user1?password=test
+#key1:userKey=GET root/login/testUser1?password=test
 #key2:userKey=GET root/login/#user2?password=test
 
 * Creates a new shout template
@@ -25,5 +25,5 @@ GET root/users/#user1?userKey=#key1
 GET root/users/#user2?userKey=#key2
 
 * Logs out
-DELETE root/login/#user1?userKey=#key1
+DELETE root/login/testUser1?userKey=#key1
 DELETE root/login/#user2?userKey=#key2

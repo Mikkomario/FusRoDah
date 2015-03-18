@@ -7,3 +7,4 @@ Utopia Vault			1.04
 Utopia Nexus			1.091
 Utopia Flow				1.422
 Utopia Alliance			1.03
+Utopia Genesis			1.27

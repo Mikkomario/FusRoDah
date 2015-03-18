@@ -1,14 +1,19 @@
 package fusrodah_rest;
 
+import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import vault_database.DatabaseAccessor;
+import vault_database.DatabaseUnavailableException;
 import fusrodah_main.FusrodahTable;
 import fusrodah_main.Location;
 import nexus_http.HttpException;
+import nexus_http.InternalServerException;
 import nexus_http.InvalidParametersException;
 import nexus_http.MethodNotSupportedException;
 import nexus_http.MethodType;
@@ -120,14 +125,17 @@ public class UserEntity extends DatabaseEntity
 	{
 		setAttribute("location", newLocation.toString());
 		writeData();
-		
-		// TODO: Not working since userName can't be updated (duplicate)
 	}
 	
 	private static Map<String, String> checkParameters(Map<String, String> parameters) 
 			throws HttpException
 	{
-		// TODO: Check that the userName is not already in use
+		if (!parameters.containsKey("userName"))
+			throw new InvalidParametersException("Parameter 'userName' required");
+		
+		// Checks if the userName is already in use
+		if (UserEntity.userNameInUse(parameters.get("userName")))
+			throw new InvalidParametersException("UserName already in use");
 		
 		// Sets the points to zero
 		parameters.put("points", "0");
@@ -143,6 +151,20 @@ public class UserEntity extends DatabaseEntity
 					"Parameter 'userName' must not start with a digit");
 		
 		return parameters;
+	}
+	
+	private static boolean userNameInUse(String userName) throws HttpException
+	{
+		try
+		{
+			List<String> matches = DatabaseAccessor.findMatchingData(FusrodahTable.USERS, 
+					"userName", userName, "id");
+			return !matches.isEmpty();
+		}
+		catch (DatabaseUnavailableException | SQLException e)
+		{
+			throw new InternalServerException("Failed to check existing userNames", e);
+		}
 	}
 	
 	

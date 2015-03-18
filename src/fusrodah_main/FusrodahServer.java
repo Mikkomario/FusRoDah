@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import fusrodah_rest.FusRoDahLoginManagerEntity;
 import fusrodah_rest.ShoutListEntity;
 import fusrodah_rest.TemplateListEntity;
 import fusrodah_rest.UsersListEntity;
@@ -12,8 +13,6 @@ import nexus_rest.RestEntity;
 import nexus_rest.StaticRestServer;
 import vault_database.DatabaseSettings;
 import vault_database.DatabaseUnavailableException;
-import alliance_authorization.LoginManagerEntity;
-import alliance_authorization.PasswordChecker;
 
 /**
  * This is the main class for the project. The server can be started through this class.
@@ -44,7 +43,7 @@ public class FusrodahServer
 		if (args.length < 3)
 		{
 			System.out.println("Please provide the correct parameters (ip, port, password, "
-					+ "user (optional), database address (optional)");
+					+ "user (optional), database address (optional))");
 			System.exit(0);
 		}
 		
@@ -72,12 +71,11 @@ public class FusrodahServer
 		// Creates the server entities
 		Map<String, String> serverAttributes = new HashMap<>();
 		serverAttributes.put("started", new SimpleDate().toString());
-		serverAttributes.put("version", "1.01");
+		serverAttributes.put("version", "1.02");
 		
 		RestEntity root = new ImmutableRestEntity("root", null, serverAttributes);
 		
-		new LoginManagerEntity("login", root, FusrodahTable.LOGINKEYS, "userKey", 
-				new PasswordChecker(FusrodahTable.SECURE, "passwordHash", "id"));
+		new FusRoDahLoginManagerEntity(root);
 		new ShoutListEntity(root);
 		new TemplateListEntity(root);
 		new UsersListEntity(root);
