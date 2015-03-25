@@ -4,19 +4,19 @@
 GET root
 
 * Creates two users
-#user1:@id=POST root/users?location=1;1;1&userName=testUser1&password=test
-#user2:@id=POST root/users?location=1;1;1&userName=testUser2&password=test
+#user1:@id=POST root/users?location=1;1&userName=testUser1&password=test
+#user2:@id=POST root/users?location=1;1&userName=testUser2&password=test
 
 * Logs in with the users
 #key1:userKey=GET root/login/testUser1?password=test
 #key2:userKey=GET root/login/#user2?password=test
 
 * Creates a new shout template
-POST root/templates?message=test&startLocation=1;1;1&endLocation=100;100;1&senderID=#user1&userKey=#key1
+POST root/templates?message=test&startLocation=1;1&endLocation=100;100&senderID=#user1&userKey=#key1
 
 * Finds the first best shout for the other user and shouts it forward
-#best:@id=GET root/shouts/best?amount=1&userKey=#key2&userID=#user2&location=1;1;1
-POST root/shouts?lastShoutID=#best&shouterID=#user2&userKey=#key2&location=100;100;1
+#best:@id=GET root/shouts/best?amount=1&userKey=#key2&userID=#user2&location=1;1
+POST root/shouts?lastShoutID=#best&shouterID=#user2&userKey=#key2&location=100;100
 
 * Reads some data
 GET root/shouts/#best

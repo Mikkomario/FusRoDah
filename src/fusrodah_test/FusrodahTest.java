@@ -51,6 +51,8 @@ public class FusrodahTest
 			}
 		}
 		
+		
+		
 		String fileName = "basicTestInstructions.txt";
 		if (args.length > 2)
 			fileName = args[2];
