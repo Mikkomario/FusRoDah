@@ -8,6 +8,7 @@ import java.util.Map;
 
 import vault_database.DatabaseUnavailableException;
 import flow_recording.ObjectFormatException;
+import fusrodah_main.ForbiddenActionException;
 import fusrodah_main.FusrodahTable;
 import fusrodah_main.Location;
 import nexus_http.HttpException;
@@ -133,6 +134,10 @@ public class ShoutListEntity extends DatabaseTableEntity
 			// And checks for authorization
 			FusrodahTable.checkUserKey(this.user.getDatabaseID(), parameters);
 			
+			// Checks if the user is still on cooldown
+			if (!this.user.canShout())
+				throw new ForbiddenActionException("The user is still on a cooldown period.");
+			
 			// Also updates user location
 			this.user.updateLocation(this.location);
 		}
@@ -178,8 +183,8 @@ public class ShoutListEntity extends DatabaseTableEntity
 		
 		// OTHER METHODS	-------------------------
 		
-		private static List<ShoutEntity> findBestShouts(Location location, String userID) throws 
-				HttpException
+		private static List<ShoutEntity> findBestShouts(Location location, String userID) 
+				throws HttpException
 		{
 			try
 			{
@@ -230,10 +235,17 @@ public class ShoutListEntity extends DatabaseTableEntity
 			}
 		}
 		
-		private static boolean shoutIsBetterThanAnother(ShoutEntity shout, ShoutEntity another)
+		private static boolean shoutIsBetterThanAnother(ShoutEntity shout, 
+				ShoutEntity another) throws HttpException
 		{
-			// TODO: Implement this
-			return false;
+			// TODO: Implement this (Also, this may be better at the shout class body)
+			// Things to consider:
+			// - Number of shouters
+			// - Last shout time
+			// - Direction
+			// - Distance
+			// - % complete
+			return another.getShoutTime().isPast(shout.getShoutTime());
 		}
 	}
 }

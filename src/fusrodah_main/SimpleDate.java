@@ -65,4 +65,37 @@ public class SimpleDate implements Comparable<SimpleDate>
 	{
 		return this.date.compareTo(o.date);
 	}
+	
+	
+	// OTHER METHODS	------------------------------
+	
+	/**
+	 * Adds a set number of minutes to this date
+	 * @param minutes How many minutes will be added to the date
+	 * @return A date that is past this one by the specified amount of minutes
+	 */
+	public SimpleDate plus(int minutes)
+	{
+		return new SimpleDate(new Date(this.date.getTime() + minutesToMillis(minutes)));
+	}
+	
+	/**
+	 * Checks if this date is past the other date instance
+	 * @param other The date instance that may be before this
+	 * @return Is this date past the given date
+	 */
+	public boolean isPast(SimpleDate other)
+	{
+		return compareTo(other) > 0;
+	}
+	
+	/**
+	 * Converts minutes to milliseconds
+	 * @param minutes The amount of minutes to be converted
+	 * @return How many milliseconds there are in the given amount of minutes
+	 */
+	public static long minutesToMillis(int minutes)
+	{
+		return minutes * 60000;
+	}
 }

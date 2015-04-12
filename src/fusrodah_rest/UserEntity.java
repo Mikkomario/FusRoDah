@@ -1,6 +1,7 @@
 package fusrodah_rest;
 
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,7 @@ import vault_database.DatabaseAccessor;
 import vault_database.DatabaseUnavailableException;
 import fusrodah_main.FusrodahTable;
 import fusrodah_main.Location;
+import fusrodah_main.SimpleDate;
 import nexus_http.HttpException;
 import nexus_http.InternalServerException;
 import nexus_http.InvalidParametersException;
@@ -37,6 +39,7 @@ public class UserEntity extends DatabaseEntity
 	 * The path preceding each user entity
 	 */
 	private static final String ROOTPATH = "root/users/";
+	private static final int shoutDelayMinutes = 15;
 	
 	
 	// CONSTRUCTOR	---------------------------------
@@ -117,6 +120,24 @@ public class UserEntity extends DatabaseEntity
 	// OTHER METHODS	-------------------------------
 	
 	/**
+	 * @return Can the user post a new shout at this time
+	 * @throws HttpException If the operation failed
+	 */
+	public boolean canShout() throws HttpException
+	{
+		SimpleDate lastShoutTime;
+		try
+		{
+			lastShoutTime = new SimpleDate(getAttributes().get("lastShoutTime"));
+		}
+		catch (ParseException e)
+		{
+			throw new InternalServerException("Failed to check user shout time", e);
+		}
+		return (new SimpleDate().isPast(lastShoutTime.plus(shoutDelayMinutes)));
+	}
+	
+	/**
 	 * Updates the user's new location to the database
 	 * @param newLocation The user's new location
 	 * @throws HttpException If the update couldn't be performed
@@ -124,6 +145,16 @@ public class UserEntity extends DatabaseEntity
 	public void updateLocation(Location newLocation) throws HttpException
 	{
 		setAttribute("location", newLocation.toString());
+		writeData();
+	}
+	
+	/**
+	 * Marks the current moment as the user's latest shout time
+	 * @throws HttpException If the update couldn't be performed
+	 */
+	public void updateLastShoutTime() throws HttpException
+	{
+		setAttribute("lastShoutTime", new SimpleDate().toString());
 		writeData();
 	}
 	
@@ -149,6 +180,9 @@ public class UserEntity extends DatabaseEntity
 				Character.isDigit(parameters.get("userName").charAt(0)))
 			throw new InvalidParametersException(
 					"Parameter 'userName' must not start with a digit");
+		
+		// Sets the last shout time to default as well
+		parameters.put("lastShoutTime", new SimpleDate().toString());
 		
 		return parameters;
 	}

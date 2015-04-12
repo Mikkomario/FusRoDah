@@ -1,13 +1,18 @@
 package fusrodah_rest;
 
+import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 
+import vault_database.DatabaseAccessor;
+import vault_database.DatabaseUnavailableException;
 import flow_recording.ObjectFormatException;
 import fusrodah_main.FusrodahTable;
 import fusrodah_main.Location;
 import fusrodah_main.SimpleDate;
 import nexus_http.HttpException;
+import nexus_http.InternalServerException;
 import nexus_http.InvalidParametersException;
 import nexus_http.MethodNotSupportedException;
 import nexus_http.MethodType;
@@ -54,6 +59,7 @@ public class ShoutTemplateEntity extends DatabaseEntity
 				checkParameters(parameters), getDefaultParameters());
 		
 		// Creates a new shout as well
+		// TODO: Update this to use a new constructor
 		parameters.put("templateID", getDatabaseID());
 		parameters.put("shouterID", parameters.get("senderID"));
 		parameters.put("location", parameters.get("startLocation"));
@@ -109,6 +115,26 @@ public class ShoutTemplateEntity extends DatabaseEntity
 	// OTHER METHODS	------------------------------
 	
 	/**
+	 * Deletes the template and each shout created from it
+	 * @throws HttpException If the template or the shouts couldn't be deleted
+	 */
+	public void delete() throws HttpException
+	{
+		// Deletes the template
+		super.prepareDelete(null);
+		
+		try
+		{
+			// Deletes all shouts created from this template
+			DatabaseAccessor.delete(FusrodahTable.SHOUTS, "templateID", getDatabaseID());
+		}
+		catch (SQLException | DatabaseUnavailableException e)
+		{
+			throw new InternalServerException("Failed to delete the shouts", e);
+		}
+	}
+	
+	/**
 	 * Updates the last shout time attribute to the database
 	 * @param time The new last shout time
 	 * @throws HttpException If the update couldn't be written
@@ -117,6 +143,24 @@ public class ShoutTemplateEntity extends DatabaseEntity
 	{
 		setAttribute("lastShoutTime", time.toString());
 		writeData();
+	}
+	
+	/**
+	 * @return Can the template still be used for creating shouts
+	 * @throws HttpException If the operation failed
+	 */
+	public boolean canBeShouted() throws HttpException
+	{
+		try
+		{
+			SimpleDate lastShoutTime = new SimpleDate(getAttributes().get("lastShoutTime"));
+			return lastShoutTime.plus(ShoutEntity.SHOUT_CAN_BE_SHOUTED_DURATION).isPast(
+					new SimpleDate());
+		}
+		catch (ParseException e)
+		{
+			throw new InternalServerException("Can't determine shoutTemplate shout time", e);
+		}
 	}
 	
 	private static Map<String, String> getDefaultParameters()
