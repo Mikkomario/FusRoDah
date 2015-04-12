@@ -28,6 +28,9 @@ public class Location
 	 */
 	public Location(String s)
 	{
+		if (s == null)
+			throw new ObjectFormatException("Location cannot be null");
+		
 		String[] parts = s.split(";");
 		
 		if (parts.length < 2)
@@ -112,7 +115,7 @@ public class Location
 				Math.cos(radianCoordinates2.getFirst() * 
 				Math.cos(radianCoordinates2.getSecond() - radianCoordinates1.getSecond()));
 		
-		return HelpMath.getVectorDirection(x, y);
+		return Math.toDegrees(Math.atan2(y, x));//HelpMath.getVectorDirection(x, y);
 	}
 	
 	/**
@@ -159,4 +162,18 @@ public class Location
 	{
 		return new Vector2D(Math.toRadians(-getLatitude()), Math.toRadians(-getLongitude()));
 	}
+	
+	/*
+	public static void main(String[] args)
+	{
+		Location jmt3 = new Location("60.187668;24.835167");
+		Location west = new Location("60.177668;24.835167");
+		Location north = new Location("60.187668;24.705167");
+		Location rautsikka = new Location("60.171730;24.941385");
+		System.out.println("Distance between jmt3 and rautsikka: " + jmt3.getDistanceFrom(rautsikka));
+		System.out.println("Direction from jmt to rautsikka: " + jmt3.getDirectionTowards(rautsikka));
+		System.out.println("Direction west: " + jmt3.getDirectionTowards(west));
+		System.out.println("Direction north: " + jmt3.getDirectionTowards(north));
+	}
+	*/
 }

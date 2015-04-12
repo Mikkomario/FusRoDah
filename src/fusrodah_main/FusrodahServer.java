@@ -71,7 +71,9 @@ public class FusrodahServer
 		// Creates the server entities
 		Map<String, String> serverAttributes = new HashMap<>();
 		serverAttributes.put("started", new SimpleDate().toString());
-		serverAttributes.put("version", "1.02");
+		serverAttributes.put("version", "1.04");
+		serverAttributes.put("wisdom", 
+				"Parempi katolla taivasalla kuin kotona toraisan vaimon kanssa");
 		
 		RestEntity root = new ImmutableRestEntity("root", null, serverAttributes);
 		

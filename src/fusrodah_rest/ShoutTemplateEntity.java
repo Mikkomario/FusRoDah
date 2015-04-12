@@ -191,10 +191,11 @@ public class ShoutTemplateEntity extends DatabaseEntity
 			UserEntity receiver = new UserEntity(parameters.get("receiverID"));
 			parameters.put("endLocation", receiver.getAttributes().get("location"));
 		}
-		else
+		else if (parameters.containsKey("endLocation"))
 		{
 			try
 			{
+				// TODO: Nullpointer
 				new Location(parameters.get("endLocation"));
 			}
 			catch (ObjectFormatException e)
@@ -202,6 +203,8 @@ public class ShoutTemplateEntity extends DatabaseEntity
 				throw new InvalidParametersException(e.getMessage());
 			}
 		}
+		else
+			throw new InvalidParametersException("Either receiverID or endLocation required.");
 		
 		// Checks that the location(s) can be parsed
 		try
