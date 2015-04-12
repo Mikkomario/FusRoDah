@@ -155,14 +155,20 @@ public class ShoutEntity extends DatabaseEntity
 	public boolean canBeHeardBy(String userID) throws HttpException
 	{
 		if (!canBeHeard())
+		{
+			System.out.println("Shout has expired");
 			return false;
+		}
 		
 		String[] shouterIDs = getShouterIds();
 		
 		for (int i = 0; i < shouterIDs.length; i++)
 		{
 			if (shouterIDs[i].equals(userID))
+			{
+				System.out.println("Shout already used");
 				return false;
+			}
 		}
 		
 		return true;
@@ -174,6 +180,7 @@ public class ShoutEntity extends DatabaseEntity
 	 */
 	public boolean canBeHeard() throws HttpException
 	{
+		System.out.println(getShoutTime().plus(SHOUT_CAN_BE_HEARD_DURATION) + " <-> " + new SimpleDate());
 		return getShoutTime().plus(SHOUT_CAN_BE_HEARD_DURATION).isPast(new SimpleDate());
 	}
 	

@@ -82,7 +82,7 @@ public class FusrodahServer
 		
 		// Starts the maintenance tasks
 		MaintenanceTimer maintenance = new MaintenanceTimer();
-		maintenance.addTask(new TemplateRemovalTask(), 5);
+		maintenance.addTask(new TemplateRemovalTask(), 2);
 		
 		// Starts the server
 		StaticRestServer.setRootEntity(root);

@@ -59,10 +59,11 @@ public class ShoutTemplateEntity extends DatabaseEntity
 				checkParameters(parameters), getDefaultParameters());
 		
 		// Creates a new shout as well
-		// TODO: Update this to use a new constructor
+		/*
 		parameters.put("templateID", getDatabaseID());
 		parameters.put("shouterID", parameters.get("senderID"));
 		parameters.put("location", parameters.get("startLocation"));
+		*/
 		new ShoutEntity(this, parameters);
 	}
 	

@@ -15,7 +15,7 @@ public class SimpleDate implements Comparable<SimpleDate>
 {
 	// ATTRIBUTES	-------------------------------
 	
-	private static DateFormat format = new SimpleDateFormat("YYYY-MM-dd-HH-mm");
+	private static DateFormat format = new SimpleDateFormat("yyyy-MM-dd-HH-mm");
 	
 	private Date date;
 	
@@ -76,6 +76,7 @@ public class SimpleDate implements Comparable<SimpleDate>
 	 */
 	public SimpleDate plus(int minutes)
 	{
+		// TODO: Most likely doesn't work
 		return new SimpleDate(new Date(this.date.getTime() + minutesToMillis(minutes)));
 	}
 	
@@ -86,6 +87,7 @@ public class SimpleDate implements Comparable<SimpleDate>
 	 */
 	public boolean isPast(SimpleDate other)
 	{
+		// TODO: May not work correctly
 		return compareTo(other) > 0;
 	}
 	

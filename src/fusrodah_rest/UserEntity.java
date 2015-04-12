@@ -2,6 +2,7 @@ package fusrodah_rest;
 
 import java.sql.SQLException;
 import java.text.ParseException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -182,7 +183,7 @@ public class UserEntity extends DatabaseEntity
 					"Parameter 'userName' must not start with a digit");
 		
 		// Sets the last shout time to default as well
-		parameters.put("lastShoutTime", new SimpleDate().toString());
+		parameters.put("lastShoutTime", new SimpleDate(new Date(0)).toString());
 		
 		return parameters;
 	}
