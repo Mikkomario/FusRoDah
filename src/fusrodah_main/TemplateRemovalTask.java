@@ -26,9 +26,6 @@ public class TemplateRemovalTask extends MaintenanceTask
 	@Override
 	public void run()
 	{
-		// TODO: Remove test prints
-		System.out.println("Template removal initiated");
-		
 		// Finds out all the id's and last shout times of the existing templates
 		try
 		{
@@ -48,7 +45,5 @@ public class TemplateRemovalTask extends MaintenanceTask
 			System.err.println("Failed to remove old templates");
 			e.printStackTrace();
 		}
-		
-		System.out.println("Template removal complete");
 	}
 }
