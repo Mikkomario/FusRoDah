@@ -116,6 +116,31 @@ public class ShoutTemplateEntity extends DatabaseEntity
 	// OTHER METHODS	------------------------------
 	
 	/**
+	 * @return The target location of the shout chain
+	 */
+	public Location getEndLocation()
+	{
+		return new Location(getAttributes().get("endLocation"));
+	}
+	
+	/**
+	 * @return Has the template been completed and resulted in victory
+	 */
+	public boolean isCompleted()
+	{
+		return Boolean.parseBoolean(getAttributes().get("completed"));
+	}
+	
+	/**
+	 * @return How many points should be awarded from completing this template
+	 */
+	public int calculateGainedPoints()
+	{
+		Location startLocation = new Location(getAttributes().get("startLocation"));
+		return (int) (startLocation.getDistanceFrom(getEndLocation()) / 100);
+	}
+	
+	/**
 	 * Deletes the template and each shout created from it
 	 * @throws HttpException If the template or the shouts couldn't be deleted
 	 */
@@ -143,6 +168,16 @@ public class ShoutTemplateEntity extends DatabaseEntity
 	public void updateLastShoutTime(SimpleDate time) throws HttpException
 	{
 		setAttribute("lastShoutTime", time.toString());
+		writeData();
+	}
+	
+	/**
+	 * Updates the template status to completed
+	 * @throws HttpException If the update couldn't be written
+	 */
+	public void markCompleted() throws HttpException
+	{
+		setAttribute("completed", "true");
 		writeData();
 	}
 	
@@ -217,6 +252,7 @@ public class ShoutTemplateEntity extends DatabaseEntity
 		}
 		
 		parameters.put("lastShoutTime", new SimpleDate().toString());
+		parameters.put("completed", "false");
 		
 		return parameters;
 	}

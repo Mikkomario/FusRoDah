@@ -29,6 +29,8 @@ public class TemplateRemovalTask extends MaintenanceTask
 		// Finds out all the id's and last shout times of the existing templates
 		try
 		{
+			// TODO: Don't remove templates that are completed
+			
 			List<String> templateIDs = DatabaseEntityTable.findMatchingIDs(
 					FusrodahTable.TEMPLATES, new String[0], new String[0]);
 			

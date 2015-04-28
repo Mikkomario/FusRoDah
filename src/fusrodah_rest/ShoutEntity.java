@@ -66,6 +66,10 @@ public class ShoutEntity extends DatabaseEntity
 	{
 		super(new SimpleRestData(), parent, FusrodahTable.SHOUTS, 
 				checkShoutParameters(parameters), new HashMap<>());
+		
+		// Checks if the shout reached its goal. If so, creates a new victory
+		if (reaches(getTemplate().getEndLocation()))
+			new VictoryEntity(this);
 	}
 	
 	/**
@@ -97,7 +101,7 @@ public class ShoutEntity extends DatabaseEntity
 	{
 		Map<String, RestEntity> links = new HashMap<>();
 		
-		links.put("template", new ShoutTemplateEntity(getAttributes().get("templateID")));
+		links.put("template", getTemplate());
 		links.put("shouters", getShouters());
 		
 		return links;
@@ -108,7 +112,7 @@ public class ShoutEntity extends DatabaseEntity
 			Map<String, String> parameters) throws HttpException
 	{
 		if (pathPart.equals("template"))
-			return new ShoutTemplateEntity(getAttributes().get("templateID"));
+			return getTemplate();
 		else if (pathPart.equals("shouters"))
 			return getShouters();
 		
@@ -117,6 +121,15 @@ public class ShoutEntity extends DatabaseEntity
 
 	
 	// OTHER METHODS	----------------------------------
+	
+	/**
+	 * @return The template associated with this shout
+	 * @throws HttpException If the template couldn't be read
+	 */
+	public ShoutTemplateEntity getTemplate() throws HttpException
+	{
+		return new ShoutTemplateEntity(getAttributes().get("templateID"));
+	}
 	
 	/**
 	 * @return The moment when the shout was first shouted
@@ -174,7 +187,9 @@ public class ShoutEntity extends DatabaseEntity
 	 */
 	public boolean canBeHeard() throws HttpException
 	{
-		return getShoutTime().plus(SHOUT_CAN_BE_HEARD_DURATION).isPast(new SimpleDate());
+		// Too old shouts can't be heard, neither can completed shouts
+		return getShoutTime().plus(SHOUT_CAN_BE_HEARD_DURATION).isPast(new SimpleDate()) && 
+				!getTemplate().isCompleted();
 	}
 	
 	/**
@@ -211,6 +226,14 @@ public class ShoutEntity extends DatabaseEntity
 	public boolean reaches(Location location)
 	{
 		return getLocation().getDistanceFrom(location) < getReach();
+	}
+	
+	/**
+	 * @return The ids of the shouters that have contirbuted to this shout
+	 */
+	public String[] getShouterIds()
+	{
+		return getAttributes().get("shouterIDs").split("\\+");
 	}
 	
 	private static Map<String, String> checkShoutParameters(Map<String, String> parameters) throws 
@@ -262,7 +285,8 @@ public class ShoutEntity extends DatabaseEntity
 		return checkCommonParameters(parameters);
 	}
 	
-	private static Map<String, String> checkCommonParameters(Map<String, String> parameters) throws HttpException
+	private static Map<String, String> checkCommonParameters(Map<String, String> parameters) 
+			throws HttpException
 	{
 		if (!parameters.containsKey("shouterID"))
 			throw new InvalidParametersException("Parameter 'shouterID' required");
@@ -299,10 +323,5 @@ public class ShoutEntity extends DatabaseEntity
 		}
 		
 		return new SimpleRestEntityList("shouters", this, shouters);
-	}
-	
-	private String[] getShouterIds()
-	{
-		return getAttributes().get("shouterIDs").split("\\+");
 	}
 }

@@ -159,6 +159,19 @@ public class UserEntity extends DatabaseEntity
 		writeData();
 	}
 	
+	/**
+	 * Gives some points to the user
+	 * @param increment How many points are given to this player
+	 * @throws HttpException If the update couldn't be performed
+	 */
+	public void addPoints(int increment) throws HttpException
+	{
+		int newPoints = Integer.parseInt(getAttributes().get("points")) + increment;
+		
+		setAttribute("points", "" + newPoints);
+		writeData();
+	}
+	
 	private static Map<String, String> checkParameters(Map<String, String> parameters) 
 			throws HttpException
 	{

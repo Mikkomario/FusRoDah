@@ -38,7 +38,11 @@ public enum FusrodahTable implements DatabaseEntityTable
 	/**
 	 * The loginKeys table contains the login keys
 	 */
-	LOGINKEYS;
+	LOGINKEYS,
+	/**
+	 * The victories table contains victory data for completed shouts
+	 */
+	VICTORIES;
 	
 	
 	// ATTRIBUTES	---------------------------
