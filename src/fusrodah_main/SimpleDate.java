@@ -76,8 +76,17 @@ public class SimpleDate implements Comparable<SimpleDate>
 	 */
 	public SimpleDate plus(int minutes)
 	{
-		// TODO: Most likely doesn't work
 		return new SimpleDate(new Date(this.date.getTime() + minutesToMillis(minutes)));
+	}
+	
+	/**
+	 * Calculates the amount of minutes between the two dates
+	 * @param other The other date
+	 * @return The amount of minutes since other date till this date
+	 */
+	public int minus(SimpleDate other)
+	{
+		return (int) millisToMinutes(this.date.getTime() - other.date.getTime());
 	}
 	
 	/**
@@ -99,5 +108,15 @@ public class SimpleDate implements Comparable<SimpleDate>
 	public static long minutesToMillis(int minutes)
 	{
 		return minutes * 60000;
+	}
+	
+	/**
+	 * Converts milliseconds to minutes
+	 * @param millis How many milliseconds are to be converted
+	 * @return How many minutes there are within the given amount of milliseconds
+	 */
+	public static long millisToMinutes(long millis)
+	{
+		return millis / 60000;
 	}
 }

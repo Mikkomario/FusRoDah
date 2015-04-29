@@ -1,5 +1,7 @@
 package fusrodah_main;
 
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.TimerTask;
 
 /**
@@ -15,4 +17,22 @@ public abstract class MaintenanceTask extends TimerTask
 	 * @return How many minutes there are between each maintenance task
 	 */
 	public abstract int getMaintenanceIntervalMinutes();
+	
+	
+	// OTHER METHODS	------------------------
+	
+	/**
+	 * @return The amount of minutes from this moment until midnight
+	 */
+	public static int getMinutesTillMidnight()
+	{
+		Calendar tomorrow = new GregorianCalendar();
+		tomorrow.set(Calendar.HOUR_OF_DAY, 0);
+		tomorrow.set(Calendar.MINUTE, 0);
+		tomorrow.set(Calendar.SECOND, 0);
+		tomorrow.set(Calendar.MILLISECOND, 0);
+		tomorrow.add(Calendar.DAY_OF_MONTH, 1);
+		
+		return new SimpleDate(tomorrow.getTime()).minus(new SimpleDate());
+	}
 }

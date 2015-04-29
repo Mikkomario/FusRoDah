@@ -83,7 +83,7 @@ public class ShoutTemplateEntity extends DatabaseEntity
 		Map<String, String> attributes = getAttributes();
 		Map<String, RestEntity> links = new HashMap<>();
 		
-		links.put("sender", new UserEntity(attributes.get("senderID")));
+		links.put("sender", new UserEntity(getSenderID()));
 		if (!attributes.get("receiverID").equals("-1"))
 			links.put("receiver", new UserEntity(attributes.get("receiverID")));
 		
@@ -95,7 +95,7 @@ public class ShoutTemplateEntity extends DatabaseEntity
 			Map<String, String> parameters) throws HttpException
 	{
 		if (pathPart.equals("sender"))
-			return new UserEntity(getAttributes().get("senderID"));
+			return new UserEntity(getSenderID());
 		else if (pathPart.equals("receiver"))
 		{
 			String receiverID = getAttributes().get("receiverID");
@@ -114,6 +114,14 @@ public class ShoutTemplateEntity extends DatabaseEntity
 
 	
 	// OTHER METHODS	------------------------------
+	
+	/**
+	 * @return The identifier of the sender of this template
+	 */
+	public String getSenderID()
+	{
+		return getAttributes().get("senderID");
+	}
 	
 	/**
 	 * @return The target location of the shout chain

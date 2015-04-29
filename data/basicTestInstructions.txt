@@ -21,8 +21,9 @@ POST root/shouts?lastShoutID=#best&shouterID=#user2&userKey=#key2&location=100;1
 * Reads some data
 GET root/shouts/#best
 GET root/shouts/#best/template
-GET root/users/#user1?userKey=#key1
-GET root/users/#user2?userKey=#key2
+GET root/users/#user1
+GET root/users/#user2/points
+GET root/users/#user1/victories
 
 * Logs out
 DELETE root/login/testUser1?userKey=#key1

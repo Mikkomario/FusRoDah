@@ -59,6 +59,15 @@ public class Location
 	}
 	
 	
+	// IMPLEMENTED METHODS	-------------------------------
+	
+	@Override
+	public String toString()
+	{
+		return getLatitude() + ";" + getLongitude();
+	}
+	
+	
 	// GETTERS & SETTERS	-------------------------------
 	
 	/**

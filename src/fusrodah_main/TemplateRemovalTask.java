@@ -29,16 +29,14 @@ public class TemplateRemovalTask extends MaintenanceTask
 		// Finds out all the id's and last shout times of the existing templates
 		try
 		{
-			// TODO: Don't remove templates that are completed
-			
 			List<String> templateIDs = DatabaseEntityTable.findMatchingIDs(
 					FusrodahTable.TEMPLATES, new String[0], new String[0]);
 			
-			// Deletes old templates
+			// Deletes old templates that can't be shouted but are not complete either
 			for (String templateID : templateIDs)
 			{
 				ShoutTemplateEntity template = new ShoutTemplateEntity(templateID);
-				if (!template.canBeShouted())
+				if (!template.isCompleted() && !template.canBeShouted())
 					template.delete();
 			}
 		}

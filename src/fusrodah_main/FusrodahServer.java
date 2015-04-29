@@ -71,8 +71,8 @@ public class FusrodahServer
 		// Creates the server entities
 		Map<String, String> serverAttributes = new HashMap<>();
 		serverAttributes.put("started", new SimpleDate().toString());
-		serverAttributes.put("version", "1.05");
-		serverAttributes.put("wisdom", "Parempi pyy pivossa kuin kymmenen oksalla");
+		serverAttributes.put("version", "1.06");
+		serverAttributes.put("wisdom", "Kun talosi palaa, lämmittele");
 		
 		RestEntity root = new ImmutableRestEntity("root", null, serverAttributes);
 		
@@ -84,6 +84,8 @@ public class FusrodahServer
 		// Starts the maintenance tasks
 		MaintenanceTimer maintenance = new MaintenanceTimer();
 		maintenance.addTask(new TemplateRemovalTask(), 2);
+		maintenance.addTask(new VictoryRemovalTask(), 
+				MaintenanceTask.getMinutesTillMidnight() + 2 * 60);
 		
 		// Starts the server
 		StaticRestServer.setRootEntity(root);

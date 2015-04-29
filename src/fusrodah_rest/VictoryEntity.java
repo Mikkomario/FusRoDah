@@ -1,13 +1,17 @@
 package fusrodah_rest;
 
+import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import vault_database.DatabaseUnavailableException;
 import fusrodah_main.FusrodahTable;
 import fusrodah_main.SimpleDate;
 import nexus_http.HttpException;
+import nexus_http.InternalServerException;
 import nexus_http.MethodNotSupportedException;
 import nexus_http.MethodType;
 import nexus_http.NotFoundException;
@@ -16,6 +20,7 @@ import nexus_rest.RestEntityList;
 import nexus_rest.SimpleRestData;
 import nexus_rest.SimpleRestEntityList;
 import alliance_rest.DatabaseEntity;
+import alliance_rest.DatabaseEntityTable;
 
 /**
  * A victory entity represents a completed shout chain that has reached its destination
@@ -27,6 +32,8 @@ public class VictoryEntity extends DatabaseEntity
 	// ATTRIBUTES	--------------------------
 	
 	private static final String ROOTPATH = "root/victories/";
+	// Victories last for a week on the server
+	private static final int VICTORY_DURATION_MINUTES = 7 * 24 * 60;
 	
 	
 	// CONSTRUCTOR	--------------------------
@@ -84,9 +91,81 @@ public class VictoryEntity extends DatabaseEntity
 		
 		throw new NotFoundException(getPath() + "/" + pathPart);
 	}
+	
+	@Override
+	protected void prepareDelete(Map<String, String> parameters) throws HttpException
+	{
+		// Checks for authorizarion
+		FusrodahTable.checkUserKey(getTemplate().getSenderID(), parameters);
+		
+		// Deletes any template connected to this entity
+		getTemplate().delete();
+		super.prepareDelete(parameters);
+	}
 
 	
 	// OTHER METHODS	------------------------
+	
+	/**
+	 * Checks if a user has received points from this victory
+	 * @param userID The identifier of the user
+	 * @return Has the given user received points from this victory
+	 */
+	public boolean hasCollaborated(String userID)
+	{
+		String[] receiverIDs = getReceiverIDs();
+		for (int i = 0; i < receiverIDs.length; i++)
+		{
+			if (receiverIDs[i].equals(userID))
+				return true;
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * @return Is the entity old enough to be removed from the server
+	 * @throws HttpException If the operation failed
+	 */
+	public boolean shouldBeRemoved() throws HttpException
+	{
+		try
+		{
+			return new SimpleDate().isPast(new SimpleDate(getAttributes().get("created")).plus(
+					VICTORY_DURATION_MINUTES));
+		}
+		catch (ParseException e)
+		{
+			throw new InternalServerException("Couldn't define victory creation time", e);
+		}
+	}
+	
+	/**
+	 * Deletes the entity without authorization. Also removes the connected template
+	 * @throws HttpException If the operation failed
+	 */
+	public void delete() throws HttpException
+	{
+		getTemplate().delete();
+		super.prepareDelete(new HashMap<>());
+	}
+	
+	/**
+	 * @return A list containing all the victory ids that are currently in use
+	 * @throws HttpException If the ids couldn't be read for some reason
+	 */
+	public static List<String> getAllVictoryIDs() throws HttpException
+	{
+		try
+		{
+			return DatabaseEntityTable.findMatchingIDs(
+					FusrodahTable.VICTORIES, new String[0], new String[0]);
+		}
+		catch (DatabaseUnavailableException | SQLException e)
+		{
+			throw new InternalServerException("Couldn't read the victory ids", e);
+		}
+	}
 	
 	private ShoutTemplateEntity getTemplate() throws HttpException
 	{
@@ -95,7 +174,7 @@ public class VictoryEntity extends DatabaseEntity
 	
 	private RestEntityList getReceivers() throws HttpException
 	{
-		String[] receiverIDs = getAttributes().get("receiverIDs").split("\\+");
+		String[] receiverIDs = getReceiverIDs();
 		List<RestEntity> receivers = new ArrayList<>();
 		for (int i = 0; i < receiverIDs.length; i++)
 		{
@@ -103,6 +182,11 @@ public class VictoryEntity extends DatabaseEntity
 		}
 		
 		return new SimpleRestEntityList("receivers", this, receivers);
+	}
+	
+	private String[] getReceiverIDs()
+	{
+		return getAttributes().get("receiverIDs").split("\\+");
 	}
 	
 	private static Map<String, String> generateParameters(ShoutEntity shout) throws HttpException
@@ -118,6 +202,8 @@ public class VictoryEntity extends DatabaseEntity
 		int receivedPoints = template.calculateGainedPoints();
 		parameters.put("receivedPoints", "" + receivedPoints);
 		template.markCompleted();
+		
+		// TODO: What if the template was already complete?
 		
 		// Also adds points to all contributed players
 		parameters.put("receiverIDs", shout.getAttributes().get("shouterIDs"));

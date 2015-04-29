@@ -2,13 +2,11 @@ package fusrodah_rest;
 
 import java.sql.SQLException;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 import vault_database.DatabaseAccessor;
 import vault_database.DatabaseUnavailableException;
@@ -22,6 +20,7 @@ import nexus_http.MethodNotSupportedException;
 import nexus_http.MethodType;
 import nexus_http.NotFoundException;
 import nexus_rest.RestEntity;
+import nexus_rest.RestEntityList;
 import nexus_rest.SimpleRestData;
 import alliance_authorization.SecureEntity;
 import alliance_rest.DatabaseEntity;
@@ -85,6 +84,7 @@ public class UserEntity extends DatabaseEntity
 	{
 		Map<String, RestEntity> links = new HashMap<>();
 		links.put("secure", new Secure());
+		links.put("victories", new VictoryEntityList(this));
 		
 		return links;
 	}
@@ -93,8 +93,10 @@ public class UserEntity extends DatabaseEntity
 	protected RestEntity getMissingEntity(String pathPart,
 			Map<String, String> parameters) throws HttpException
 	{
-		if (pathPart.equals("secure"))
+		if (pathPart.equalsIgnoreCase("secure"))
 			return new Secure();
+		else if (pathPart.equalsIgnoreCase("victories"))
+			return new VictoryEntityList(this);
 		
 		throw new NotFoundException(getPath() + "/" + pathPart);
 	}
@@ -106,15 +108,6 @@ public class UserEntity extends DatabaseEntity
 		
 		// Also deletes the secure
 		new Secure().delete(parameters);
-	}
-	
-	@Override
-	public void writeContent(String serverLink, XMLStreamWriter writer, 
-			Map<String, String> parameters) throws HttpException, XMLStreamException
-	{
-		// The content can only be written with proper authorization
-		FusrodahTable.checkUserKey(getDatabaseID(), parameters);
-		super.writeContent(serverLink, writer, parameters);
 	}
 
 	
@@ -258,6 +251,76 @@ public class UserEntity extends DatabaseEntity
 				throws HttpException
 		{
 			FusrodahTable.checkUserKey(getDatabaseID(), parameters);
+		}
+	}
+	
+	private static class VictoryEntityList extends RestEntityList
+	{
+		// ATTRIBUTES	-------------------------
+		
+		private List<RestEntity> victories;
+		private String userID;
+		
+		
+		// CONSTRUCTOR	-------------------------
+		
+		public VictoryEntityList(UserEntity user)
+		{
+			super("victories", user);
+			
+			this.userID = user.getDatabaseID();
+		}
+		
+		
+		// IMPLEMENTED METHODS	-----------------
+
+		@Override
+		protected List<RestEntity> getEntities()
+		{
+			if (this.victories == null)
+			{
+				try
+				{
+					List<VictoryEntity> foundVictories = findGainedVictories();
+					this.victories = new ArrayList<>();
+					this.victories.addAll(foundVictories);
+				}
+				catch (HttpException e)
+				{
+					// TODO Change the super method to allow exceptions
+					e.printStackTrace();
+				}
+			}
+			return this.victories;
+		}
+
+		@Override
+		public void trim(Map<String, String> parameters)
+		{
+			// No trimming required
+		}
+
+		@Override
+		public void Put(Map<String, String> parameters) throws HttpException
+		{
+			throw new MethodNotSupportedException(MethodType.PUT);
+		}
+		
+		
+		// OTHER METHODS	----------------------
+		
+		private List<VictoryEntity> findGainedVictories() throws HttpException
+		{
+			List<VictoryEntity> victories = new ArrayList<>();
+			// For each victory, checks if the user has collaborated
+			for (String victoryID : VictoryEntity.getAllVictoryIDs())
+			{
+				VictoryEntity victory = new VictoryEntity(victoryID);
+				if (victory.hasCollaborated(this.userID))
+					victories.add(victory);
+			}
+			
+			return victories;
 		}
 	}
 }

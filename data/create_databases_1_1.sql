@@ -21,7 +21,7 @@ CREATE TABLE templates1
 	senderID 	bigint 			NOT NULL,
 	receiverID 	bigint,
 	lastShoutTime varchar(255) 	NOT NULL,
-	completed 	boolean 		NOT NULL;
+	completed 	varchar(10) 	NOT NULL
 );
 
 CREATE TABLE users1
@@ -41,7 +41,7 @@ CREATE TABLE secure1
 
 CREATE TABLE victories1
 (
-	id 			bigint 			NOT NULL PRIMARY KEY,
+	id 			bigint 			NOT NULL PRIMARY KEY AUTO_INCREMENT,
 	receivedPoints varchar(255) NOT NULL,
 	receiverIDs TEXT 			NOT NULL,
 	created 	varchar(255) 	NOT NULL,

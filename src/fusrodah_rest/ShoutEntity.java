@@ -118,6 +118,12 @@ public class ShoutEntity extends DatabaseEntity
 		
 		throw new NotFoundException(getPath() + pathPart);
 	}
+	
+	@Override
+	protected void prepareDelete(Map<String, String> parameters) throws HttpException
+	{
+		throw new MethodNotSupportedException(MethodType.DELETE);
+	}
 
 	
 	// OTHER METHODS	----------------------------------
