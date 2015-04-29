@@ -95,12 +95,14 @@ public class VictoryEntity extends DatabaseEntity
 	@Override
 	protected void prepareDelete(Map<String, String> parameters) throws HttpException
 	{
+		throw new MethodNotSupportedException(MethodType.DELETE);
 		// Checks for authorizarion
-		FusrodahTable.checkUserKey(getTemplate().getSenderID(), parameters);
+		//FusrodahTable.checkUserKey(getTemplate().getSenderID(), parameters);
+		
+		// TODO: Should a collaborator be deleted instead? You shouldn't delete a shared resource
 		
 		// Deletes any template connected to this entity
-		getTemplate().delete();
-		super.prepareDelete(parameters);
+		//delete();
 	}
 
 	
