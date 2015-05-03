@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Map;
 
 import fusrodah_main.ForbiddenActionException;
+import fusrodah_main.FusrodahLoginTable;
 import fusrodah_main.FusrodahTable;
 import fusrodah_main.Location;
-import fusrodah_main.SimpleDate;
 import nexus_http.HttpException;
 import nexus_http.InternalServerException;
 import nexus_http.InvalidParametersException;
@@ -21,6 +21,7 @@ import nexus_rest.RestEntityList;
 import nexus_rest.SimpleRestData;
 import nexus_rest.SimpleRestEntityList;
 import alliance_rest.DatabaseEntity;
+import alliance_util.SimpleDate;
 
 /**
  * This entity represents a single "shout" created by a user
@@ -301,7 +302,7 @@ public class ShoutEntity extends DatabaseEntity
 		UserEntity shouter = new UserEntity(parameters.get("shouterID"));
 		
 		// Also checks for authorization
-		FusrodahTable.checkUserKey(shouter.getDatabaseID(), parameters);
+		FusrodahLoginTable.checkUserKey(shouter.getDatabaseID(), parameters);
 		
 		// Checks if the shouter can shout at this time
 		if (!shouter.canShout())

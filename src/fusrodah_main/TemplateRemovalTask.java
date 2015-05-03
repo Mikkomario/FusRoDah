@@ -6,6 +6,7 @@ import java.util.List;
 import nexus_http.HttpException;
 import fusrodah_rest.ShoutTemplateEntity;
 import alliance_rest.DatabaseEntityTable;
+import alliance_util.MaintenanceTask;
 import vault_database.DatabaseUnavailableException;
 
 /**

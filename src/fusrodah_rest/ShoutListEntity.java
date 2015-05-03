@@ -9,6 +9,7 @@ import java.util.Map;
 import vault_database.DatabaseUnavailableException;
 import flow_recording.ObjectFormatException;
 import fusrodah_main.ForbiddenActionException;
+import fusrodah_main.FusrodahLoginTable;
 import fusrodah_main.FusrodahTable;
 import fusrodah_main.Location;
 import nexus_http.HttpException;
@@ -132,7 +133,7 @@ public class ShoutListEntity extends DatabaseTableEntity
 			}
 			
 			// And checks for authorization
-			FusrodahTable.checkUserKey(this.user.getDatabaseID(), parameters);
+			FusrodahLoginTable.checkUserKey(this.user.getDatabaseID(), parameters);
 			
 			// Checks if the user is still on cooldown
 			if (!this.user.canShout())
@@ -146,23 +147,15 @@ public class ShoutListEntity extends DatabaseTableEntity
 		// IMPLEMENTED METHODS	-------------------
 
 		@Override
-		protected List<RestEntity> getEntities()
+		protected List<RestEntity> getEntities() throws HttpException
 		{
 			// If the entities haven't bee requested yet, finds them
 			if (this.bestEntities == null)
 			{
-				try
-				{
-					List<ShoutEntity> bestShouts = findBestShouts(this.location, 
-							this.user.getDatabaseID());
-					this.bestEntities = new ArrayList<>();
-					this.bestEntities.addAll(bestShouts);
-				}
-				catch (HttpException e)
-				{
-					// TODO Change the overridden method to allow httpExceptions
-					e.printStackTrace();
-				}
+				List<ShoutEntity> bestShouts = findBestShouts(this.location, 
+						this.user.getDatabaseID());
+				this.bestEntities = new ArrayList<>();
+				this.bestEntities.addAll(bestShouts);
 			}
 			
 			return this.bestEntities;

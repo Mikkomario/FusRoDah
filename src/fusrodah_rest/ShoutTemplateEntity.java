@@ -8,9 +8,9 @@ import java.util.Map;
 import vault_database.DatabaseAccessor;
 import vault_database.DatabaseUnavailableException;
 import flow_recording.ObjectFormatException;
+import fusrodah_main.FusrodahLoginTable;
 import fusrodah_main.FusrodahTable;
 import fusrodah_main.Location;
-import fusrodah_main.SimpleDate;
 import nexus_http.HttpException;
 import nexus_http.InternalServerException;
 import nexus_http.InvalidParametersException;
@@ -20,6 +20,7 @@ import nexus_http.NotFoundException;
 import nexus_rest.RestEntity;
 import nexus_rest.SimpleRestData;
 import alliance_rest.DatabaseEntity;
+import alliance_util.SimpleDate;
 
 /**
  * This entity represents a shout template
@@ -226,7 +227,7 @@ public class ShoutTemplateEntity extends DatabaseEntity
 		UserEntity sender = new UserEntity(parameters.get("senderID"));
 		
 		// Checks the authorization
-		FusrodahTable.checkUserKey(sender.getDatabaseID(), parameters);
+		FusrodahLoginTable.checkUserKey(sender.getDatabaseID(), parameters);
 		
 		// Provides the end location if receiver is provided
 		if (parameters.containsKey("receiverID"))

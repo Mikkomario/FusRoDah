@@ -3,6 +3,7 @@ package fusrodah_test;
 import java.io.FileNotFoundException;
 
 import nexus_http.FileReaderClient;
+import nexus_test.HttpClientAnalyzer;
 
 /**
  * This class runs some test on the given server and prints the results
@@ -51,16 +52,16 @@ public class FusrodahTest
 			}
 		}
 		
-		
-		
 		String fileName = "basicTestInstructions.txt";
 		if (args.length > 2)
 			fileName = args[2];
 		
 		try
 		{
-			new FileReaderClient("FusRoDahTest/1.1", args[0], port, 
-					true).readFile(fileName, "*");
+			FileReaderClient client = new FileReaderClient("FusRoDahTest/1.1", args[0], port, 
+					true);
+			new HttpClientAnalyzer(client.getListenerHandler());
+			client.readFile(fileName, "*");
 		}
 		catch (FileNotFoundException e)
 		{

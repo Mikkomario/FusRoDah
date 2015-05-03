@@ -4,6 +4,10 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import alliance_authorization.LoginKeyRemovalTask;
+import alliance_util.MaintenanceTask;
+import alliance_util.MaintenanceTimer;
+import alliance_util.SimpleDate;
 import fusrodah_rest.FusRoDahLoginManagerEntity;
 import fusrodah_rest.ShoutListEntity;
 import fusrodah_rest.TemplateListEntity;
@@ -11,6 +15,7 @@ import fusrodah_rest.UsersListEntity;
 import nexus_rest.ImmutableRestEntity;
 import nexus_rest.RestEntity;
 import nexus_rest.StaticRestServer;
+import nexus_test.HttpServerAnalyzer;
 import vault_database.DatabaseSettings;
 import vault_database.DatabaseUnavailableException;
 
@@ -40,25 +45,25 @@ public class FusrodahServer
 	 */
 	public static void main(String[] args)
 	{
-		if (args.length < 3)
+		if (args.length < 4)
 		{
-			System.out.println("Please provide the correct parameters (ip, port, password, "
-					+ "user (optional), database address (optional))");
+			System.out.println("Please provide the correct parameters (ip, port, encoding, "
+					+ "password, user (optional), database address (optional))");
 			System.exit(0);
 		}
 		
 		String connectionTarget = "jdbc:mysql://localhost:3306/";
 		String user = "root";
 		
+		if (args.length >= 6)
+			connectionTarget = args[5];
 		if (args.length >= 5)
-			connectionTarget = args[4];
-		if (args.length >= 4)
-			user = args[3];
+			user = args[4];
 		
 		// Initializes database settings
 		try
 		{
-			DatabaseSettings.initialize(connectionTarget, user, args[2], 1000, 
+			DatabaseSettings.initialize(connectionTarget, user, args[3], 1000, 
 					"fusrodah_management_db", "tableamounts");
 		}
 		catch (DatabaseUnavailableException | SQLException e)
@@ -71,8 +76,9 @@ public class FusrodahServer
 		// Creates the server entities
 		Map<String, String> serverAttributes = new HashMap<>();
 		serverAttributes.put("started", new SimpleDate().toString());
-		serverAttributes.put("version", "1.06");
-		serverAttributes.put("wisdom", "Kun talosi palaa, lämmittele");
+		serverAttributes.put("version", "1.07");
+		serverAttributes.put("wisdom", 
+				"Kuin kultarengas sian kärsässä on kaunis nainen, älyä vailla.");
 		
 		RestEntity root = new ImmutableRestEntity("root", null, serverAttributes);
 		
@@ -86,9 +92,11 @@ public class FusrodahServer
 		maintenance.addTask(new TemplateRemovalTask(), 2);
 		maintenance.addTask(new VictoryRemovalTask(), 
 				MaintenanceTask.getMinutesTillMidnight() + 2 * 60);
+		maintenance.addTask(new LoginKeyRemovalTask(FusrodahLoginTable.LOGINKEYS, 22));
 		
 		// Starts the server
 		StaticRestServer.setRootEntity(root);
+		StaticRestServer.setEventListener(new HttpServerAnalyzer());
 		StaticRestServer.startServer(args);
 	}
 }

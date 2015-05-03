@@ -2,7 +2,7 @@ package fusrodah_main;
 
 import flow_recording.ObjectFormatException;
 import genesis_util.HelpMath;
-import genesis_util.Vector2D;
+import genesis_util.Vector3D;
 
 /**
  * Location represents a location in the real world. The location is immutable once created.
@@ -14,7 +14,7 @@ public class Location
 {
 	// ATTRIBUTES	-----------------------------
 	
-	private final Vector2D latLong;
+	private final Vector3D latLong;
 	
 	private static final int EARTH_RADIUS = 6371000; // metres
 	
@@ -41,7 +41,7 @@ public class Location
 			double latitude = Double.parseDouble(parts[0]);
 			double longitude = Double.parseDouble(parts[1]);
 			
-			this.latLong = new Vector2D(latitude, longitude);
+			this.latLong = new Vector3D(latitude, longitude);
 		}
 		catch (NumberFormatException e)
 		{
@@ -53,7 +53,7 @@ public class Location
 	 * Creates a new location
 	 * @param latitudeLongitude The location's coordinates in latitude-longitude format
 	 */
-	public Location(Vector2D latitudeLongitude)
+	public Location(Vector3D latitudeLongitude)
 	{
 		this.latLong = latitudeLongitude;
 	}
@@ -73,7 +73,7 @@ public class Location
 	/**
 	 * @return The latitude-longitude coordinates of this position
 	 */
-	public Vector2D getCoordinates()
+	public Vector3D getCoordinates()
 	{
 		return this.latLong;
 	}
@@ -113,8 +113,8 @@ public class Location
 			var brng = Math.atan2(y, x).toDegrees();
 		 */
 		
-		Vector2D radianCoordinates1 = getRadianCoordinates();
-		Vector2D radianCoordinates2 = other.getRadianCoordinates();
+		Vector3D radianCoordinates1 = getRadianCoordinates();
+		Vector3D radianCoordinates2 = other.getRadianCoordinates();
 		
 		double y = Math.sin(radianCoordinates2.getSecond() - radianCoordinates1.getSecond()) * 
 				Math.cos(radianCoordinates2.getFirst());
@@ -167,9 +167,9 @@ public class Location
 		return EARTH_RADIUS * c;
 	}
 	
-	private Vector2D getRadianCoordinates()
+	private Vector3D getRadianCoordinates()
 	{
-		return new Vector2D(Math.toRadians(-getLatitude()), Math.toRadians(-getLongitude()));
+		return new Vector3D(Math.toRadians(-getLatitude()), Math.toRadians(-getLongitude()));
 	}
 	
 	/*

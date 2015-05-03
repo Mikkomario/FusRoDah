@@ -10,9 +10,9 @@ import java.util.Map;
 
 import vault_database.DatabaseAccessor;
 import vault_database.DatabaseUnavailableException;
+import fusrodah_main.FusrodahLoginTable;
 import fusrodah_main.FusrodahTable;
 import fusrodah_main.Location;
-import fusrodah_main.SimpleDate;
 import nexus_http.HttpException;
 import nexus_http.InternalServerException;
 import nexus_http.InvalidParametersException;
@@ -24,6 +24,7 @@ import nexus_rest.RestEntityList;
 import nexus_rest.SimpleRestData;
 import alliance_authorization.SecureEntity;
 import alliance_rest.DatabaseEntity;
+import alliance_util.SimpleDate;
 
 /**
  * User entity represents a single user in the service
@@ -83,8 +84,11 @@ public class UserEntity extends DatabaseEntity
 			Map<String, String> parameters) throws HttpException
 	{
 		Map<String, RestEntity> links = new HashMap<>();
-		links.put("secure", new Secure());
-		links.put("victories", new VictoryEntityList(this));
+		Secure secure = new Secure();
+		VictoryEntityList victories = new VictoryEntityList(this);
+		
+		links.put(secure.getName(), secure);
+		links.put(victories.getName(), victories);
 		
 		return links;
 	}
@@ -250,7 +254,7 @@ public class UserEntity extends DatabaseEntity
 		protected void authorizeModification(Map<String, String> parameters)
 				throws HttpException
 		{
-			FusrodahTable.checkUserKey(getDatabaseID(), parameters);
+			FusrodahLoginTable.checkUserKey(getDatabaseID(), parameters);
 		}
 	}
 	
@@ -275,21 +279,13 @@ public class UserEntity extends DatabaseEntity
 		// IMPLEMENTED METHODS	-----------------
 
 		@Override
-		protected List<RestEntity> getEntities()
+		protected List<RestEntity> getEntities() throws HttpException
 		{
 			if (this.victories == null)
 			{
-				try
-				{
-					List<VictoryEntity> foundVictories = findGainedVictories();
-					this.victories = new ArrayList<>();
-					this.victories.addAll(foundVictories);
-				}
-				catch (HttpException e)
-				{
-					// TODO Change the super method to allow exceptions
-					e.printStackTrace();
-				}
+				List<VictoryEntity> foundVictories = findGainedVictories();
+				this.victories = new ArrayList<>();
+				this.victories.addAll(foundVictories);
 			}
 			return this.victories;
 		}

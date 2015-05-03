@@ -6,6 +6,7 @@ import java.util.Map;
 
 import vault_database.DatabaseAccessor;
 import vault_database.DatabaseUnavailableException;
+import fusrodah_main.FusrodahLoginTable;
 import fusrodah_main.FusrodahTable;
 import nexus_http.HttpException;
 import nexus_http.InternalServerException;
@@ -28,8 +29,8 @@ public class FusRoDahLoginManagerEntity extends LoginManagerEntity
 	 */
 	public FusRoDahLoginManagerEntity(RestEntity parent)
 	{
-		super("login", parent, FusrodahTable.LOGINKEYS, "userKey", 
-				new PasswordChecker(FusrodahTable.SECURE, "passwordHash", "id"));
+		super("login", parent, FusrodahLoginTable.LOGINKEYS, 
+				new PasswordChecker(FusrodahTable.SECURE, "passwordHash", "id"), false);
 	}
 	
 	

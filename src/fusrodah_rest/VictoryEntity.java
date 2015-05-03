@@ -9,7 +9,6 @@ import java.util.Map;
 
 import vault_database.DatabaseUnavailableException;
 import fusrodah_main.FusrodahTable;
-import fusrodah_main.SimpleDate;
 import nexus_http.HttpException;
 import nexus_http.InternalServerException;
 import nexus_http.MethodNotSupportedException;
@@ -21,6 +20,7 @@ import nexus_rest.SimpleRestData;
 import nexus_rest.SimpleRestEntityList;
 import alliance_rest.DatabaseEntity;
 import alliance_rest.DatabaseEntityTable;
+import alliance_util.SimpleDate;
 
 /**
  * A victory entity represents a completed shout chain that has reached its destination
