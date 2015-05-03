@@ -17,7 +17,7 @@ import nexus_http.NotFoundException;
 import nexus_rest.RestEntity;
 import nexus_rest.RestEntityList;
 import nexus_rest.SimpleRestData;
-import nexus_rest.SimpleRestEntityList;
+import nexus_rest.SimpleRestEntityLinkList;
 import alliance_rest.DatabaseEntity;
 import alliance_rest.DatabaseEntityTable;
 import alliance_util.SimpleDate;
@@ -183,7 +183,7 @@ public class VictoryEntity extends DatabaseEntity
 			receivers.add(new UserEntity(receiverIDs[i]));
 		}
 		
-		return new SimpleRestEntityList("receivers", this, receivers);
+		return new SimpleRestEntityLinkList("receivers", this, receivers);
 	}
 	
 	private String[] getReceiverIDs()

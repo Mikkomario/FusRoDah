@@ -20,7 +20,7 @@ import nexus_http.MethodNotSupportedException;
 import nexus_http.MethodType;
 import nexus_http.NotFoundException;
 import nexus_rest.RestEntity;
-import nexus_rest.RestEntityList;
+import nexus_rest.RestEntityLinkList;
 import nexus_rest.SimpleRestData;
 import alliance_authorization.SecureEntity;
 import alliance_rest.DatabaseEntity;
@@ -258,7 +258,7 @@ public class UserEntity extends DatabaseEntity
 		}
 	}
 	
-	private static class VictoryEntityList extends RestEntityList
+	private static class VictoryEntityList extends RestEntityLinkList
 	{
 		// ATTRIBUTES	-------------------------
 		
@@ -294,12 +294,6 @@ public class UserEntity extends DatabaseEntity
 		public void trim(Map<String, String> parameters)
 		{
 			// No trimming required
-		}
-
-		@Override
-		public void Put(Map<String, String> parameters) throws HttpException
-		{
-			throw new MethodNotSupportedException(MethodType.PUT);
 		}
 		
 		

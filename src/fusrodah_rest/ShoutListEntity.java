@@ -8,10 +8,10 @@ import java.util.Map;
 
 import vault_database.DatabaseUnavailableException;
 import flow_recording.ObjectFormatException;
-import fusrodah_main.ForbiddenActionException;
 import fusrodah_main.FusrodahLoginTable;
 import fusrodah_main.FusrodahTable;
 import fusrodah_main.Location;
+import nexus_http.ForbiddenActionException;
 import nexus_http.HttpException;
 import nexus_http.InternalServerException;
 import nexus_http.InvalidParametersException;
@@ -20,7 +20,7 @@ import nexus_http.MethodType;
 import nexus_http.NotFoundException;
 import nexus_rest.ImmutableRestData;
 import nexus_rest.RestEntity;
-import nexus_rest.RestEntityList;
+import nexus_rest.RestEntityLinkList;
 import alliance_rest.DatabaseEntityTable;
 import alliance_rest.DatabaseTableEntity;
 
@@ -98,7 +98,7 @@ public class ShoutListEntity extends DatabaseTableEntity
 	
 	// SUBCLASSES	--------------------------------
 	
-	private static class BestShoutList extends RestEntityList
+	private static class BestShoutList extends RestEntityLinkList
 	{
 		// ATTRIBUTES	----------------------------
 		
@@ -165,12 +165,6 @@ public class ShoutListEntity extends DatabaseTableEntity
 		public void trim(Map<String, String> parameters)
 		{
 			// No trimming required
-		}
-
-		@Override
-		public void Put(Map<String, String> parameters) throws HttpException
-		{
-			throw new MethodNotSupportedException(MethodType.PUT);
 		}
 		
 		

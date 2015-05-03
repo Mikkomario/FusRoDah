@@ -6,10 +6,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import fusrodah_main.ForbiddenActionException;
 import fusrodah_main.FusrodahLoginTable;
 import fusrodah_main.FusrodahTable;
 import fusrodah_main.Location;
+import nexus_http.ForbiddenActionException;
 import nexus_http.HttpException;
 import nexus_http.InternalServerException;
 import nexus_http.InvalidParametersException;
@@ -19,7 +19,7 @@ import nexus_http.NotFoundException;
 import nexus_rest.RestEntity;
 import nexus_rest.RestEntityList;
 import nexus_rest.SimpleRestData;
-import nexus_rest.SimpleRestEntityList;
+import nexus_rest.SimpleRestEntityLinkList;
 import alliance_rest.DatabaseEntity;
 import alliance_util.SimpleDate;
 
@@ -329,6 +329,6 @@ public class ShoutEntity extends DatabaseEntity
 			shouters.add(new UserEntity(shouterIDs[i]));
 		}
 		
-		return new SimpleRestEntityList("shouters", this, shouters);
+		return new SimpleRestEntityLinkList("shouters", this, shouters);
 	}
 }
