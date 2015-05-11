@@ -9,6 +9,7 @@ import java.util.Map;
 
 import vault_database.DatabaseUnavailableException;
 import fusrodah_main.FusrodahTable;
+import nexus_http.ForbiddenActionException;
 import nexus_http.HttpException;
 import nexus_http.InternalServerException;
 import nexus_http.MethodNotSupportedException;
@@ -195,17 +196,26 @@ public class VictoryEntity extends DatabaseEntity
 	{
 		Map<String, String> parameters = new HashMap<>();
 		
+		// Checks if the template was already completed
+		// If so, just adds some points but doesn't allow a new victory entity
+		String templateID = shout.getAttributes().get("templateID");
+		ShoutTemplateEntity template = new ShoutTemplateEntity(templateID);
+		int receivedPoints = template.calculateGainedPoints();
+		
+		if (template.isCompleted())
+		{
+			String[] shouterIDs = shout.getShouterIds();
+			UserEntity lastShouter = new UserEntity(shouterIDs[shouterIDs.length - 1]);
+			lastShouter.addPoints(receivedPoints / 2);
+			throw new ForbiddenActionException("The shout had already reached it's goal");
+		}
+		
 		parameters.put("created", new SimpleDate().toString());
 		
 		// Updates the template
-		String templateID = shout.getAttributes().get("templateID");
-		ShoutTemplateEntity template = new ShoutTemplateEntity(templateID);
 		parameters.put("templateID", templateID);
-		int receivedPoints = template.calculateGainedPoints();
 		parameters.put("receivedPoints", "" + receivedPoints);
 		template.markCompleted();
-		
-		// TODO: What if the template was already complete?
 		
 		// Also adds points to all contributed players
 		parameters.put("receiverIDs", shout.getAttributes().get("shouterIDs"));

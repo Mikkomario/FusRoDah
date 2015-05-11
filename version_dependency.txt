@@ -2,11 +2,13 @@ Fusrodah version dependency
 
 Mariadb java client		1.1.7
 HttpCore				4.3.2
+Jackson Core			2.5.0
 
 Utopia Vault			1.04
-Utopia Nexus			1.112
+Utopia Nexus			1.2
 Utopia Flow				1.422
-Utopia Alliance			1.1
+Utopia Alliance			1.11
 Utopia Genesis			1.282
+Utopia Tempest			1.0
 
 create_databases_1_11
